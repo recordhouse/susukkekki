@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://susukkekki.kr/sitemap_index.xml
