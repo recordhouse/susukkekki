@@ -157,11 +157,11 @@ const updateStructuredData = () => {
   const data = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "흥미로운 이야기 | 수수께끼 최신 글 모음",
+    name: "흥미로운 이야기 | 수수께끼",
     url: "https://susukkekki.kr/",
     inLanguage: "ko-KR",
     description:
-      "수수께끼의 미스터리, 유머, 여행, 과학 최신 이야기를 카테고리별로 모은 페이지입니다.",
+      "수수께끼의 미스터리, 유머, 여행, 과학 등 각 흥미로운 이야기를 알려주는 페이지입니다.",
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: posts.length,
@@ -217,7 +217,7 @@ const setLoading = (loading) => {
 
 const loadPosts = async () => {
   setLoading(true);
-  statusText.textContent = "카테고리별 최신 게시글을 불러오는 중입니다.";
+  statusText.textContent = "흥미로운 최신 이야기를 불러오는 중입니다.";
 
   try {
     const categoriesResponse = await fetch(
@@ -259,7 +259,7 @@ const loadPosts = async () => {
       (total, category) => total + category.posts.length,
       0,
     );
-    statusText.textContent = `카테고리 ${state.categories.length}개에서 게시글 ${postCount}개를 표시 중입니다.`;
+    statusText.textContent = `흥미로운 이야기 ${postCount}개를 표시 중입니다.`;
     updateStructuredData();
     render();
   } catch (error) {

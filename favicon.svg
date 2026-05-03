@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="수수께끼 favicon">
+  <rect width="64" height="64" rx="15" fill="#0f766e"/>
+  <path fill="#f7f8f4" d="M16 17h32a6 6 0 0 1 6 6v18a6 6 0 0 1-6 6H32l-10 8v-8h-6a6 6 0 0 1-6-6V23a6 6 0 0 1 6-6z"/>
+  <path fill="#0b514c" d="M28 36c0-6 8-6 8-11 0-3-2-5-6-5-3 0-6 2-8 4l4 5c1-1 2-2 4-2 1 0 2 1 2 2 0 3-8 4-8 11h7zm-1 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+  <circle cx="47" cy="18" r="6" fill="#b45309"/>
+</svg>
