@@ -1,5 +1,10 @@
 const API_BASE_URL = "https://susukkekki.kr/wp-json/wp/v2";
 const POSTS_PER_CATEGORY = 9;
+const SITE_URL = "https://susukkekki.kr/";
+const SITE_NAME = "수수께끼";
+const SITE_TITLE = "흥미로운 이야기 | 수수께끼";
+const SITE_DESCRIPTION =
+  "수수께끼는 미스터리, 유머, 여행, 과학 등 알아두면 재미있는 흥미로운 이야기를 쉽고 빠르게 알려주는 한국어 콘텐츠 사이트입니다.";
 
 const state = {
   categories: [],
@@ -14,6 +19,7 @@ const refreshButton = document.querySelector("#refreshButton");
 const searchInput = document.querySelector("#searchInput");
 const template = document.querySelector("#postCardTemplate");
 const structuredDataId = "latest-posts-structured-data";
+const staticPostData = document.querySelector("#static-post-data");
 
 const plainText = (html = "") => {
   const doc = new DOMParser().parseFromString(html, "text/html");
@@ -64,6 +70,20 @@ const normalizeCategory = (category, posts) => ({
   link: category.link,
   posts: posts.map(normalizePost),
 });
+
+const readStaticData = () => {
+  if (!staticPostData?.textContent) {
+    return [];
+  }
+
+  try {
+    const data = JSON.parse(staticPostData.textContent);
+    return Array.isArray(data.categories) ? data.categories : [];
+  } catch (error) {
+    console.error("Failed to parse static post data", error);
+    return [];
+  }
+};
 
 const createCard = (post) => {
   const node = template.content.firstElementChild.cloneNode(true);
@@ -154,14 +174,34 @@ const updateStructuredData = () => {
   const posts = state.categories.flatMap((category) =>
     category.posts.map((post) => ({ ...post, category: category.name })),
   );
+  const modifiedDates = posts
+    .map((post) => post.modified || post.date)
+    .filter(Boolean)
+    .sort();
+  const latestModified = modifiedDates[modifiedDates.length - 1];
   const data = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "흥미로운 이야기 | 수수께끼",
-    url: "https://susukkekki.kr/",
+    name: SITE_TITLE,
+    url: SITE_URL,
     inLanguage: "ko-KR",
-    description:
-      "수수께끼의 미스터리, 유머, 여행, 과학 등 각 흥미로운 이야기를 알려주는 페이지입니다.",
+    description: SITE_DESCRIPTION,
+    dateModified: latestModified,
+    isPartOf: {
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}favicon.svg`,
+      },
+    },
+    about: ["미스터리", "유머", "여행", "과학", "흥미로운 이야기"],
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: posts.length,
@@ -173,11 +213,20 @@ const updateStructuredData = () => {
           headline: post.title,
           description: post.excerpt,
           url: post.link,
+          mainEntityOfPage: post.link,
           image: post.image || undefined,
           datePublished: post.date,
           dateModified: post.modified || post.date,
           articleSection: post.category,
           inLanguage: "ko-KR",
+          author: {
+            "@type": "Organization",
+            name: SITE_NAME,
+          },
+          publisher: {
+            "@type": "Organization",
+            name: SITE_NAME,
+          },
         },
       })),
     },
@@ -207,6 +256,14 @@ const render = () => {
   }
 
   categories.forEach((category) => postGrid.append(createCategorySection(category)));
+};
+
+const updateStatus = () => {
+  const postCount = state.categories.reduce(
+    (total, category) => total + category.posts.length,
+    0,
+  );
+  statusText.textContent = `흥미로운 이야기 ${postCount}개를 표시 중입니다.`;
 };
 
 const setLoading = (loading) => {
@@ -255,11 +312,7 @@ const loadPosts = async () => {
     );
 
     state.categories = categoriesWithPosts.filter((category) => category.posts.length);
-    const postCount = state.categories.reduce(
-      (total, category) => total + category.posts.length,
-      0,
-    );
-    statusText.textContent = `흥미로운 이야기 ${postCount}개를 표시 중입니다.`;
+    updateStatus();
     updateStructuredData();
     render();
   } catch (error) {
@@ -283,4 +336,11 @@ searchInput.addEventListener("input", (event) => {
   render();
 });
 
-loadPosts();
+state.categories = readStaticData();
+
+if (state.categories.length) {
+  updateStatus();
+  updateStructuredData();
+} else {
+  loadPosts();
+}
