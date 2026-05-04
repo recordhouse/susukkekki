@@ -14,7 +14,10 @@ SITE_URL = "https://susukkekki.kr/"
 SITE_NAME = "수수께끼"
 SITE_TITLE = "흥미로운 이야기 | 수수께끼"
 SITE_DESCRIPTION = "수수께끼는 미스터리, 유머, 여행, 과학 등 알아두면 재미있는 흥미로운 이야기를 쉽고 빠르게 알려주는 한국어 콘텐츠 사이트입니다."
-POSTS_PER_CATEGORY = 9
+DEFAULT_POSTS_PER_CATEGORY = 9
+DISPLAY_POSTS_BY_CATEGORY = {
+    "미스터리": 9,
+}
 INDEX_PATH = Path("index.html")
 
 
@@ -91,6 +94,17 @@ def normalize_category(category, posts):
     }
 
 
+def display_limit_for_category(category):
+    name = plain_text(category.get("name", ""))
+    return DISPLAY_POSTS_BY_CATEGORY.get(name, DEFAULT_POSTS_PER_CATEGORY)
+
+
+def fetch_limit_for_category(category):
+    name = plain_text(category.get("name", ""))
+    extra_for_featured = 1 if name in DISPLAY_POSTS_BY_CATEGORY else 0
+    return display_limit_for_category(category) + extra_for_featured
+
+
 def load_categories():
     category_query = urllib.parse.urlencode(
         {
@@ -105,10 +119,13 @@ def load_categories():
     rendered = []
 
     for category in categories:
+        # Fetch one extra post for categories with a custom display limit because the
+        # newest post may be pulled into the separate featured slot.
+        per_page = fetch_limit_for_category(category)
         post_query = urllib.parse.urlencode(
             {
                 "categories": category["id"],
-                "per_page": POSTS_PER_CATEGORY,
+                "per_page": per_page,
                 "_embed": 1,
             }
         )
@@ -158,7 +175,7 @@ def render_featured(categories):
 def render_category(category, excluded_post_id=None):
     category_posts = [
         post for post in category["posts"] if post["id"] != excluded_post_id
-    ]
+    ][: display_limit_for_category(category)]
     if not category_posts:
         return ""
     posts = "\n".join(render_post(post) for post in category_posts)

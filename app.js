@@ -1,5 +1,6 @@
 const API_BASE_URL = "https://susukkekki.kr/wp-json/wp/v2";
-const POSTS_PER_CATEGORY = 9;
+const DEFAULT_POSTS_PER_CATEGORY = 9;
+const POSTS_PER_CATEGORY = new Map();
 const SITE_URL = "https://susukkekki.kr/";
 const SITE_NAME = "수수께끼";
 const SITE_TITLE = "흥미로운 이야기 | 수수께끼";
@@ -70,6 +71,9 @@ const normalizeCategory = (category, posts) => ({
   link: category.link,
   posts: posts.map(normalizePost),
 });
+
+const postsPerCategory = (category) =>
+  POSTS_PER_CATEGORY.get(plainText(category.name)) || DEFAULT_POSTS_PER_CATEGORY;
 
 const readStaticData = () => {
   if (!staticPostData?.textContent) {
@@ -293,7 +297,7 @@ const loadPosts = async () => {
       categories.map(async (category) => {
         try {
           const postsResponse = await fetch(
-            `${API_BASE_URL}/posts?categories=${category.id}&per_page=${POSTS_PER_CATEGORY}&_embed=1&_=${Date.now()}`,
+            `${API_BASE_URL}/posts?categories=${category.id}&per_page=${postsPerCategory(category)}&_embed=1&_=${Date.now()}`,
             {
               headers: { Accept: "application/json" },
             },
